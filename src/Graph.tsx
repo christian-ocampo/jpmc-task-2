@@ -14,7 +14,7 @@ interface IProps {
  * Perspective library adds load to HTMLElement prototype.
  * This interface acts as a wrapper for Typescript compiler.
  */
-interface PerspectiveViewerElement {
+interface PerspectiveViewerElement extends HTMLElement {
   load: (table: Table) => void,
 }
 
@@ -32,7 +32,7 @@ class Graph extends Component<IProps, {}> {
 
   componentDidMount() {
     // Get element to attach the table from the DOM.
-    const elem: PerspectiveViewerElement = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+    const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
 
     const schema = {
       stock: 'string',
@@ -49,6 +49,17 @@ class Graph extends Component<IProps, {}> {
 
       // Add more Perspective configurations here.
       elem.load(this.table);
+      elem.setAttribute('view', 'y_line'); // Creates a continuous line graph using y-line.
+      elem.setAttribute('column-pivots', '["stock"]'); // Distinguishes between different stocks with ["stock"].
+      elem.setAttribute('row-pivots', '["timestamp"]'); // Maps out each datapoint based on its timestamp for the x-axis.
+      elem.setAttribute('columns', '["top_ask_price"]'); // Focuses on the top_ask_price for each stock.
+      elem.setAttribute('aggregates', `
+        {"stock":"distinct count",
+        "top_ask_price":"avg",
+        "top_bid_price":"avg",
+        "timestamp":"distinct count"}`); // Consolidates duplicate data into a single datapoint. Unique datapoints are
+                                         // chosen by having a different name of a stock and differing timestamps.
+                                         // Otherwise, average out top_bid_prices and top_ask_prices for duplicates.
     }
   }
 
